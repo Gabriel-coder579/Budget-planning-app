@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple Budget Planner</title>
+    <style>
+      body {
+        font-family: "Inter", sans-serif; /* Custom font */
+        background-image: url("images/usd.jpeg");
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Ensuring it takes full viewport height */
+        padding: 1rem; /* Adding some padding around the main container */
+        margin: 0; /* Removing default body margin */
+        box-sizing: border-box; /* Including padding and border in the element's total width and height */
+      }
+
+      /* Main Container Styling */
+      .container {
+        background-color: gray; /* White background */
+        padding: 2rem; /* Consistent padding */
+        border-radius: 0.75rem; /* Rounded corners (12px) */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Large shadow */
+        width: 100%; /* Take full width */
+        max-width: 400px; /* Max width for better readability on large screens */
+        border: 1px solid #e2e8f0; /* Light gray border */
+      }
+
+      /* Heading Styling */
+      h1 {
+        font-size: 1.875rem; /* text-3xl */
+        font-weight: bold;
+        text-align: center;
+        color: #1a202c; /* gray-800 */
+        margin-bottom: 1.5rem; /* mb-6 */
+      }
+
+      /* Input Section Styling */
+      .input-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* space-y-4 */
+        margin-bottom: 1.5rem; /* mb-6 */
+      }
+
+      .input-group {
+        margin-bottom: 0.5rem; /* Small margin between input groups */
+      }
+
+      label {
+        display: block;
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 500; /* font-medium */
+        color: black; /* gray-700 */
+        margin-bottom: 0.25rem; /* mb-1 */
+      }
+
+      input[type="number"] {
+        width: 100%;
+        padding: 0.75rem; /* p-3 */
+        border: 1px solid #cbd5e0; /* gray-300 */
+        border-radius: 0.5rem; /* rounded-lg */
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        transition: all 0.2s ease-in-out; /* transition duration-200 ease-in-out */
+      }
+
+      input[type="number"]:focus {
+        outline: none;
+        border-color: #3b82f6; /* blue-500 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* focus:ring-2 focus:ring-blue-500 */
+      }
+
+      /* Button Styling */
+      .calculate-button {
+        width: 100%;
+        background-color: #2563eb; /* blue-600 */
+        color: #ffffff; /* text-white */
+        padding: 0.75rem; /* p-3 */
+        border-radius: 0.5rem; /* rounded-lg */
+        font-weight: 600; /* font-semibold */
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s ease-in-out,
+          box-shadow 0.3s ease-in-out; /* transition duration-300 ease-in-out */
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-md */
+      }
+
+      .calculate-button:hover {
+        background-color: #1d4ed8; /* blue-700 */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05); /* hover:shadow-lg */
+      }
+
+      /* Results Section Styling */
+      .results-section {
+        margin-top: 2rem; /* mt-8 */
+        padding: 1rem; /* p-4 */
+        background-color: #f8fafc; /* gray-50 */
+        border-radius: 0.5rem; /* rounded-lg */
+        border: 1px solid #e2e8f0; /* gray-200 */
+        display: none; /* hidden by default, controlled by JS */
+      }
+
+      .results-section.show {
+        display: block; /* Show when JS adds 'show' class */
+      }
+
+      h2 {
+        font-size: 1.25rem; /* text-xl */
+        font-weight: 600; /* font-semibold */
+        color: #1a202c; /* gray-800 */
+        margin-bottom: 1rem; /* mb-4 */
+      }
+
+      .result-item {
+        color: #4a5568; /* gray-700 */
+        margin-bottom: 0.5rem; /* mb-2 */
+      }
+
+      .result-item span {
+        font-weight: 500; /* font-medium */
+      }
+
+      .text-green {
+        color: #16a34a; /* green-600 */
+      }
+
+      .text-red {
+        color: #dc2626; /* red-600 */
+      }
+
+      .text-bold {
+        font-weight: bold;
+      }
+
+      .budget-status {
+        font-size: 1.125rem; /* text-lg */
+        font-weight: bold;
+        text-align: center;
+        margin-top: 1rem; /* Adjust as needed */
+      }
+
+      .status-green {
+        color: #15803d; /* green-700 */
+      }
+
+      .status-red {
+        color: #b91c1c; /* red-700 */
+      }
+
+      .status-blue {
+        color: #2563eb; /* blue-700 */
+      }
+
+      .error-message {
+        color: #ef4444; /* red-500 */
+        font-size: 0.875rem; /* text-sm */
+        text-align: center;
+        margin-top: 0.5rem; /* mt-2 */
+      }
+
+      /* Responsive adjustments for smaller screens */
+      @media (max-width: 600px) {
+        .container {
+          padding: 1.5rem;
+        }
+        h1 {
+          font-size: 1.5rem;
+        }
+        .calculate-button {
+          padding: 0.65rem;
+        }
+      }
+      header {
+        text-align: center;
+        margin-bottom: 1rem; /* Space between header and main content */
+      }
+      .back-home-button {
+        color: black;
+        font-weight: bolder;
+        padding: 10px;
+        margin-right: 10px;
+        background-color: #2563eb;
+        border-radius: 5px;
+      }
+      .back-home-button:hover {
+        background-color:rgba(0, 0, 0, 0.05);
+      }
+    
+    </style>
+  </head>
+ 
+  <body>
+    <div>
+      <button class="back-home-button"
+      onclick="location.href='home.html'"
+    >
+      Back
+    </button> 
+    </div>
+                                                                                                                                                                                   
+    <div class="container"> 
+      <h1>Budget Planner</h1>
+
+      <div class="input-section">
+        <div class="input-group">
+          <label for="income">Monthly Income ($)</label>
+          <input type="number" id="income" placeholder="e.g., 2500" />
+        </div>
+
+        <div class="input-group">
+          <label for="rent">Rent/Mortgage ($)</label>
+          <input type="number" id="rent" placeholder="e.g., 800" />
+        </div>
+
+        <div class="input-group">
+          <label for="groceries">Groceries ($)</label>
+          <input type="number" id="groceries" placeholder="e.g., 400" />
+        </div>
+
+        <div class="input-group">
+          <label for="utilities">Utilities ($)</label>
+          <input type="number" id="utilities" placeholder="e.g., 150" />
+        </div>
+
+        <div class="input-group">
+          <label for="transportation">Transportation ($)</label>
+          <input type="number" id="transportation" placeholder="e.g., 100" />
+        </div>
+
+        <div class="input-group">
+          <label for="entertainment">Entertainment ($)</label>
+          <input type="number" id="entertainment" placeholder="e.g., 200" />
+        </div>
+      </div>
+
+      <button id="calculateBtn" class="calculate-button">
+        Calculate Budget
+      </button>
+
+      <div id="results" class="results-section">
+        <h2>Your Budget Summary:</h2>
+        <p class="result-item">
+          Total Income: <span id="displayIncome" class="text-green"></span>
+        </p>
+        <p class="result-item">
+          Total Expenses: <span id="displayExpenses" class="text-red"></span>
+        </p>
+        <p class="result-item">
+          Remaining Budget:
+          <span id="displayRemaining" class="text-bold"></span>
+        </p>
+        <p id="budgetStatus" class="budget-status"></p>
+        <p id="errorMessage" class="error-message"></p>
+      </div>
+    </div>
+
+    <script>
+      // Get references to HTML elements
+      const incomeInput = document.getElementById("income");
+      const rentInput = document.getElementById("rent");
+      const groceriesInput = document.getElementById("groceries");
+      const utilitiesInput = document.getElementById("utilities");
+      const transportationInput = document.getElementById("transportation");
+      const entertainmentInput = document.getElementById("entertainment");
+      const calculateBtn = document.getElementById("calculateBtn");
+      const resultsDiv = document.getElementById("results");
+      const displayIncome = document.getElementById("displayIncome");
+      const displayExpenses = document.getElementById("displayExpenses");
+      const displayRemaining = document.getElementById("displayRemaining");
+      const budgetStatus = document.getElementById("budgetStatus");
+      const errorMessage = document.getElementById("errorMessage");
+
+      // Adding an event listener to the calculate button
+      calculateBtn.addEventListener("click", () => {
+        // Clearing previous error messages
+        errorMessage.textContent = "";
+        // Hiding results by removing the 'show' class
+        resultsDiv.classList.remove("show");
+
+        // Getting values from input fields and convert them to numbers
+        // The '+' prefix is a shorthand way to convert a string to a number.
+        const income = +incomeInput.value;
+        const rent = +rentInput.value;
+        const groceries = +groceriesInput.value;
+        const utilities = +utilitiesInput.value;
+        const transportation = +transportationInput.value;
+        const entertainment = +entertainmentInput.value;
+
+        // Input Validation (Control Flow: if/else)
+        // Checking if any of the required inputs are not numbers or are negative.
+        if (
+          isNaN(income) ||
+          isNaN(rent) ||
+          isNaN(groceries) ||
+          isNaN(utilities) ||
+          isNaN(transportation) ||
+          isNaN(entertainment) ||
+          income < 0 ||
+          rent < 0 ||
+          groceries < 0 ||
+          utilities < 0 ||
+          transportation < 0 ||
+          entertainment < 0
+        ) {
+          errorMessage.textContent =
+            "Please enter valid positive numbers for all fields.";
+          return; // Stopping the function if validation fails
+        }
+
+        // Calculating Total Expenses
+        const totalExpenses =
+          rent + groceries + utilities + transportation + entertainment;
+
+        // Calculating Remaining Budget
+        const remainingBudget = income - totalExpenses;
+
+        // Displaying Results
+        displayIncome.textContent = `$${income.toFixed(2)}`; // formating to 2 decimal places
+        displayExpenses.textContent = `$${totalExpenses.toFixed(2)}`;
+        displayRemaining.textContent = `$${remainingBudget.toFixed(2)}`;
+
+        // Applying Control Flow (if/else if/else) for Budget Status
+        // Resetting previous status classes
+        budgetStatus.classList.remove(
+          "status-green",
+          "status-red",
+          "status-blue"
+        );
+
+        if (remainingBudget > 0) {
+          budgetStatus.textContent = "You are under budget! Great job!";
+          budgetStatus.classList.add("status-green"); // Adding green class for positive
+        } else if (remainingBudget < 0) {
+          budgetStatus.textContent = "You are over budget! Time to cut back.";
+          budgetStatus.classList.add("status-red"); // Adding red class for negative
+        } else {
+          budgetStatus.textContent = "You are perfectly balanced!";
+          budgetStatus.classList.add("status-blue"); // Adding blue class for balanced
+        }
+
+        // Showing the results section by adding the 'show' class
+        resultsDiv.classList.add("show");
+      });
+    </script>
+  </body>
+</html>
